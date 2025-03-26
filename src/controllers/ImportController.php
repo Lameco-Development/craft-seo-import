@@ -8,7 +8,7 @@ use craft\helpers\StringHelper;
 use craft\web\Controller;
 use craft\web\Request;
 use craft\web\UploadedFile;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportController extends Controller
 {
@@ -21,21 +21,37 @@ class ImportController extends Controller
 
         $file = UploadedFile::getInstanceByName('file');
 
+        $errors = [];
+
         if (!$file) {
-            $this->setFailFlash(Craft::t('formie', 'An error occurred.'));
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'importError' => Craft::t('formie', 'You must upload a file.'),
-            ]);
-
-            return null;
+            $errors['file'] = ['You must select a file.'];
         }
 
         $siteId = $request->getBodyParam('siteId');
+
+        if (!$siteId) {
+            $this->setFailFlash('An error occurred.');
+            $errors['site'] = ['You must select a site.'];
+        }
+
+        if (!empty($errors)) {
+            $this->setFailFlash('An error occurred.');
+            Craft::$app->getSession()->setFlash('errors', $errors);
+            return null;
+        }
+
         $overwriteMetaTitle = (bool)$request->getBodyParam('overwriteMetaTitle', false);
         $overwriteMetaDescription = (bool)$request->getBodyParam('overwriteMetaDescription', false);
 
-        $reader = new Xlsx();
+        try {
+            $reader = IOFactory::createReaderForFile($file->tempName, [IOFactory::READER_XLSX]);
+        } catch (\Exception $e) {
+            $this->setFailFlash('An error occurred.');
+            Craft::$app->getSession()->setFlash('errors', [
+                'file' => [$e->getMessage()],
+            ]);
+            return null;
+        }
 
         $spreadsheet = $reader->load($file->tempName);
         $worksheet = $spreadsheet->getActiveSheet();
@@ -46,7 +62,7 @@ class ImportController extends Controller
         // Add headings as keys to each row
         array_walk(
             $rows,
-            function(&$row) use ($headings) {
+            function (&$row) use ($headings) {
                 $row = array_combine($headings, $row);
             }
         );
@@ -70,14 +86,14 @@ class ImportController extends Controller
                 ->one();
 
             if (!$entry) {
-                $this->setFailFlash('Entry not found for ' . $url);
+                $this->setFailFlash('No entry found for ' . $slug);
                 continue;
             }
 
             $seo = $entry->commonSeo;
 
             if (!$seo) {
-                $this->setFailFlash('SEO not found for ' . $url);
+                $this->setFailFlash('No SEO found for ' . $slug);
                 continue;
             }
 
@@ -98,6 +114,6 @@ class ImportController extends Controller
             }
         }
 
-        $this->setSuccessFlash('Updated SEO content for ' . $count . ' entries');
+        $this->setSuccessFlash('Imported SEO for ' . $count . ' entries');
     }
 }

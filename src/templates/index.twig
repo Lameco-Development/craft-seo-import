@@ -11,23 +11,19 @@
 } %}
 
 {% block content %}
-    {% if importError is defined %}
-        <p class="error">
-            Error: {{ importError }}
-        </p>
-    {% endif %}
-
     {{ actionInput('_craft-seo-import/import/import') }}
 
     {{ forms.fileField({
-        label: 'Generated Excel file',
+        label: 'Excel file',
+        instructions: 'Select the Excel file with the SEO data to import.',
         id: 'file',
         name: 'file',
         required: true,
+        errors: craft.app.session.getFlash('errors')['file'] ?? null
     }) }}
 
     {% if craft.app.isMultiSite() %}
-        {% set sites = [{ label: 'Primary Site ({name})'|t('feed-me', {name: craft.app.sites.primarySite.name}), value: craft.app.sites.primarySite.id }] %}
+        {% set sites = [] %}
 
         {% for site in craft.app.sites.getAllSites() %}
             {% set sites = sites|merge([{ label: site.name, value: site.id }]) %}
@@ -35,11 +31,12 @@
 
         {{ forms.selectField({
             label: 'Site',
-            instructions: 'Choose which site you want to import SEO content for',
+            instructions: 'Select the site where the SEO data will be imported.',
             id: 'siteId',
             name: 'siteId',
             options: sites,
-            value: feed.siteId,
+            required: true,
+            errors: craft.app.session.getFlash('errors')['site'] ?? null
         }) }}
     {% else %}
         {{ forms.hidden({
