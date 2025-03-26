@@ -1,0 +1,46 @@
+{
+  "name": "lameco/craft-seo-import",
+  "type": "craft-plugin",
+  "require": {
+    "php": "^8.2",
+    "craftcms/cms": "^5.6",
+    "nystudio107/craft-seomatic": "^5.1",
+    "phpoffice/phpspreadsheet": "^4.1"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main"
+  },
+  "autoload": {
+    "psr-4": {
+      "lameco\\seoimport\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Laméco",
+      "homepage": "https://www.lameco.nl"
+    }
+  ],
+  "extra": {
+    "handle": "_craft-seo-import",
+    "name": "Laméco SEO import",
+    "developer": "Laméco",
+    "documentationUrl": ""
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{% extends '_layouts/cp.twig' %}
+{% import '_includes/forms.twig' as forms %}
+
+{% set title = 'SEO Import' %}
+
+{% set fullPageForm = true %}
+{% set submitButtonLabel = 'Import' %}
+
+{% set mainFormAttributes = {
+    'enctype': 'multipart/form-data'
+} %}
+
+{% block content %}
+    {% if importError is defined %}
+        <p class="error">
+            Error: {{ importError }}
+        </p>
+    {% endif %}
+
+    {{ actionInput('_craft-seo-import/import/import') }}
+
+    {{ forms.fileField({
+        label: 'Generated Excel file',
+        id: 'file',
+        name: 'file',
+        required: true,
+    }) }}
+
+    {% if craft.app.isMultiSite() %}
+        {% set sites = [{ label: 'Primary Site ({name})'|t('feed-me', {name: craft.app.sites.primarySite.name}), value: craft.app.sites.primarySite.id }] %}
+
+        {% for site in craft.app.sites.getAllSites() %}
+            {% set sites = sites|merge([{ label: site.name, value: site.id }]) %}
+        {% endfor %}
+
+        {{ forms.selectField({
+            label: 'Site',
+            instructions: 'Choose which site you want to import SEO content for',
+            id: 'siteId',
+            name: 'siteId',
+            options: sites,
+            value: feed.siteId,
+        }) }}
+    {% else %}
+        {{ forms.hidden({
+            id: 'siteId',
+            name: 'siteId',
+            value: craft.app.sites.primarySite.id,
+        }) }}
+    {% endif %}
+
+    {{ forms.checkboxField({
+        label: 'Overwrite meta title',
+        id: 'overwrite-meta-title',
+        name: 'overwriteMetaTitle',
+    }) }}
+
+    {{ forms.checkboxField({
+        label: 'Overwrite meta description',
+        id: 'overwrite-meta-description',
+        name: 'overwriteMetaDescription',
+    }) }}
+{% endblock %}
