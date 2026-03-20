@@ -96,32 +96,21 @@ class ApiController extends Controller
                 continue;
             }
 
-            $seo = $entry->commonSeo ?? null;
-
-            if (!$seo) {
-                $skipped[] = ['url' => $url, 'reason' => 'No SEO field found on entry'];
-                continue;
-            }
-
-            $changed = false;
+            $metaGlobalVars = [];
 
             if ($metaTitle) {
-                $seo->metaGlobalVars->overrides['seoTitle'] = true;
-                $seo->metaGlobalVars->seoTitle = $metaTitle;
-                $changed = true;
+                $metaGlobalVars['seoTitle'] = $metaTitle;
+                $metaGlobalVars['override-seoTitle'] = true;
             }
 
             if ($metaDescription) {
-                $seo->metaGlobalVars->overrides['seoDescription'] = true;
-                $seo->metaGlobalVars->seoDescription = $metaDescription;
-                $changed = true;
+                $metaGlobalVars['seoDescription'] = $metaDescription;
+                $metaGlobalVars['override-seoDescription'] = true;
             }
 
-            if (!$changed) {
-                continue;
-            }
-
-            $entry->commonSeo = $seo;
+            $entry->setFieldValue('commonSeo', [
+                'metaGlobalVars' => $metaGlobalVars,
+            ]);
 
             if (Craft::$app->elements->saveElement($entry)) {
                 ++$updated;
