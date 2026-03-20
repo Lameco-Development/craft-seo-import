@@ -4,8 +4,7 @@
   "require": {
     "php": "^8.2",
     "craftcms/cms": "^5.6",
-    "nystudio107/craft-seomatic": "^5.1",
-    "phpoffice/phpspreadsheet": "^4.1"
+    "nystudio107/craft-seomatic": "^5.1"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
