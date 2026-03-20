@@ -48,12 +48,19 @@ class ApiController extends Controller
 
         $data = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
 
-        // Support both `[{"results": [...]}]` and `{"results": [...]}`
+        // Support multiple formats:
+        // 1. Flat array: [{url, meta_title, ...}, ...]
+        // 2. Wrapped: {"results": [{url, meta_title, ...}, ...]}
+        // 3. Array-wrapped: [{"results": [...]}]
         if (is_array($data)) {
-            $data = $data[0] ?? null;
+            if (isset($data[0]->results)) {
+                $results = $data[0]->results;
+            } else {
+                $results = $data;
+            }
+        } else {
+            $results = $data->results ?? null;
         }
-
-        $results = $data->results ?? null;
 
         if (!is_array($results) || empty($results)) {
             throw new BadRequestHttpException('No results found in JSON data.');
