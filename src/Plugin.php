@@ -13,7 +13,7 @@ use craft\base\Plugin as BasePlugin;
 class Plugin extends BasePlugin
 {
     public string $schemaVersion = '1.0.0';
-    public bool $hasCpSection = true;
+    public bool $hasCpSection = false;
 
     public static function config(): array
     {
@@ -37,11 +37,4 @@ class Plugin extends BasePlugin
 
     }
 
-    public function getCpNavItem(): ?array
-    {
-        $item = parent::getCpNavItem();
-        $item['label'] = 'SEO Import';
-        $item['icon'] = '@lameco/seoimport/navitem.svg';
-        return $item;
-    }
 }
