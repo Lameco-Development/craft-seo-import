@@ -3,9 +3,11 @@
 namespace lameco\seoimport\controllers;
 
 use Craft;
+use craft\base\FieldInterface;
 use craft\elements\Entry;
 use craft\helpers\App;
 use craft\web\Controller;
+use nystudio107\seomatic\fields\SeoSettings;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\UnauthorizedHttpException;
@@ -96,6 +98,13 @@ class ApiController extends Controller
                 continue;
             }
 
+            $seomaticField = $this->findSeomaticField($entry);
+
+            if (!$seomaticField) {
+                $skipped[] = ['url' => $url, 'reason' => 'No SEOmatic field found on this entry'];
+                continue;
+            }
+
             $metaGlobalVars = [];
 
             if ($metaTitle) {
@@ -108,7 +117,7 @@ class ApiController extends Controller
                 $metaGlobalVars['override-seoDescription'] = true;
             }
 
-            $entry->setFieldValue('commonSeo', [
+            $entry->setFieldValue($seomaticField->handle, [
                 'metaGlobalVars' => $metaGlobalVars,
             ]);
 
@@ -125,6 +134,26 @@ class ApiController extends Controller
             'total' => count($results),
             'skipped' => $skipped,
         ]);
+    }
+
+    /**
+     * Find the SEOmatic field on an entry's field layout, regardless of its handle.
+     */
+    private function findSeomaticField(Entry $entry): ?FieldInterface
+    {
+        $fieldLayout = $entry->getFieldLayout();
+
+        if (!$fieldLayout) {
+            return null;
+        }
+
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            if ($field instanceof SeoSettings) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     private function resolveUri(string $url): string
